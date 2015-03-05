@@ -97,4 +97,29 @@ public class OracleOutputConnection
         return sb.toString();
     }
 
+    @Override
+	public void replaceTable(String fromTable, JdbcSchema schema, String toTable) throws SQLException
+    {
+        Statement stmt = connection.createStatement();
+        try {
+        	// TODO:スーパークラスも修正
+        	dropTableIfExists(toTable);
+
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append("ALTER TABLE ");
+                quoteIdentifierString(sb, fromTable);
+                sb.append(" RENAME TO ");
+                quoteIdentifierString(sb, toTable);
+                String sql = sb.toString();
+                executeUpdate(stmt, sql);
+            }
+
+            commitIfNecessary(connection);
+        } catch (SQLException ex) {
+            throw safeRollback(connection, ex);
+        } finally {
+            stmt.close();
+        }
+    }
 }
