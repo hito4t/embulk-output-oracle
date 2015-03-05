@@ -5,5 +5,7 @@
 	<classpathentry kind="src" output="out/test" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/embulk-0.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/ojdbc7.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/hito4t-embulk-output-jdbc"/>
 	<classpathentry kind="output" path="out/main"/>
 </classpath>

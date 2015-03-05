@@ -13,9 +13,9 @@ in:
     - {name: date_item, type: timestamp, format: '%Y/%m/%d'}
     - {name: timestamp_item, type: timestamp, format: '%Y/%m/%d %H:%M:%S'}
 out: 
-    type: jdbc
+    type: oracle
     host: localhost
-    database: EMBULK
+    database: XE
     user: EMBULK
     password: embulk_pw
     table: test1
