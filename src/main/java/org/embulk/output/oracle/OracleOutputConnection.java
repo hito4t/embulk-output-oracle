@@ -1,12 +1,12 @@
 package org.embulk.output.oracle;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-import org.embulk.spi.Exec;
-import org.embulk.output.jdbc.BatchInsert;
-import org.embulk.output.jdbc.JdbcOutputConnection;
 import org.embulk.output.jdbc.JdbcColumn;
+import org.embulk.output.jdbc.JdbcOutputConnection;
 import org.embulk.output.jdbc.JdbcSchema;
 
 public class OracleOutputConnection
@@ -20,26 +20,81 @@ public class OracleOutputConnection
         connection.setAutoCommit(autoCommit);
     }
 
-    /*
     @Override
     protected String convertTypeName(String typeName)
     {
         switch(typeName) {
-        case "CLOB":
-            return "TEXT";
+        case "BIGINT":
+            return "NUMBER(19,0)";
         default:
             return typeName;
         }
-    }
-    */
-    
-    @Override
-    public void createTableIfNotExists(String tableName, JdbcSchema schema) throws SQLException {
-    	// TODO:テーブル生成には未対応
     }
     
     @Override
     protected void setSearchPath(String schema) throws SQLException {
     	// NOP
     }
+    
+    protected boolean tableExists(String tableName) throws SQLException {
+    	try (ResultSet rs = connection.getMetaData().getTables(null, schemaName, tableName, null)) {
+    		return rs.next();
+    	}
+    }
+    
+    @Override
+	public void dropTableIfExists(String tableName) throws SQLException
+    {
+    	if (tableExists(tableName)) {
+            Statement stmt = connection.createStatement();
+            try {
+                String sql = String.format("DROP TABLE %s", quoteIdentifierString(tableName));
+                executeUpdate(stmt, sql);
+                commitIfNecessary(connection);
+            } catch (SQLException ex) {
+                throw safeRollback(connection, ex);
+            } finally {
+                stmt.close();
+            }
+    	}
+    }
+
+    @Override
+	public void createTableIfNotExists(String tableName, JdbcSchema schema) throws SQLException
+    {
+    	if (!tableExists(tableName)) {
+            Statement stmt = connection.createStatement();
+            try {
+                String sql = buildCreateTableSql(tableName, schema);
+                executeUpdate(stmt, sql);
+                commitIfNecessary(connection);
+            } catch (SQLException ex) {
+                throw safeRollback(connection, ex);
+            } finally {
+                stmt.close();
+            }
+    	}
+    }
+
+    protected String buildCreateTableSql(String name, JdbcSchema schema)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE TABLE ");
+        quoteIdentifierString(sb, name);
+        sb.append(" (");
+        boolean first = true;
+        for (JdbcColumn c : schema.getColumns()) {
+            if (first) { first = false; }
+            else { sb.append(", "); }
+            quoteIdentifierString(sb, c.getName());
+            sb.append(" ");
+            String typeName = getCreateTableTypeName(c);
+            sb.append(typeName);
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
+
 }

@@ -1,13 +1,12 @@
 package org.embulk.output.oracle;
 
-import java.util.Properties;
-import java.sql.Driver;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.embulk.output.jdbc.JdbcOutputConnector;
-import org.embulk.output.jdbc.JdbcOutputConnection;
 
 public class OracleOutputConnector
         implements JdbcOutputConnector

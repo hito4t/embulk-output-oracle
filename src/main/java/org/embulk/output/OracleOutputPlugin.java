@@ -83,7 +83,7 @@ public class OracleOutputPlugin
         	}
         	
         	url = String.format("jdbc:oracle:thin:@%s:%d:%s",
-                    oracleTask.getHost(), oracleTask.getPort(), oracleTask.getDatabase());
+                    oracleTask.getHost().get(), oracleTask.getPort(), oracleTask.getDatabase().get());
         }
 
         Properties props = new Properties();
