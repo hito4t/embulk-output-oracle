@@ -3,6 +3,7 @@ package org.embulk.output.oracle;
 import java.util.Properties;
 import java.sql.Driver;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.embulk.output.jdbc.JdbcOutputConnector;
@@ -11,7 +12,6 @@ import org.embulk.output.jdbc.JdbcOutputConnection;
 public class OracleOutputConnector
         implements JdbcOutputConnector
 {
-    private final Driver driver;
     private final String url;
     private final Properties properties;
 
@@ -20,7 +20,7 @@ public class OracleOutputConnector
         try {
             //this.driver = new com.mysql.jdbc.Driver();  // new com.mysql.jdbc.Driver throws SQLException
         	Class<? extends Driver> driverClass = (Class<? extends Driver>)Class.forName("oracle.jdbc.OracleDriver");
-        	this.driver = driverClass.newInstance();
+        	//this.driver = driverClass.newInstance();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -32,7 +32,7 @@ public class OracleOutputConnector
     @Override
     public OracleOutputConnection connect(boolean autoCommit) throws SQLException
     {
-        Connection c = driver.connect(url, properties);
+        Connection c = DriverManager.getConnection(url, properties);
         if (c == null) {
         	// driver.connect returns null when url is "jdbc:mysql://...".
         	throw new SQLException("Invalid url : " + url);

@@ -29,11 +29,20 @@ public class OracleOutputPlugin
         public Optional<String> getDriverPath();
 
         @Config("host")
-        public String getHost();
+        @ConfigDefault("null")
+        public Optional<String> getHost();
 
         @Config("port")
         @ConfigDefault("1521")
         public int getPort();
+
+        @Config("database")
+        @ConfigDefault("null")
+        public Optional<String> getDatabase();
+        
+        @Config("url")
+        @ConfigDefault("null")
+        public Optional<String> getUrl();
 
         @Config("user")
         public String getUser();
@@ -42,8 +51,6 @@ public class OracleOutputPlugin
         @ConfigDefault("\"\"")
         public String getPassword();
 
-        @Config("database")
-        public String getDatabase();
     }
 
     @Override
@@ -64,45 +71,24 @@ public class OracleOutputPlugin
             //loader.addPath(Paths.get(oracleTask.getDriverPath().get()));
         }
 
-        String url = String.format("jdbc:oracle:thin:@%s:%d:%s",
-                oracleTask.getHost(), oracleTask.getPort(), oracleTask.getDatabase());
+        String url;
+        if (oracleTask.getUrl().isPresent()) {
+        	url = oracleTask.getUrl().get();
+        } else {
+        	if (!oracleTask.getHost().isPresent()) {
+        		throw new IllegalArgumentException("Field 'host' is not set.");
+        	}
+        	if (!oracleTask.getDatabase().isPresent()) {
+        		throw new IllegalArgumentException("Field 'database' is not set.");
+        	}
+        	
+        	url = String.format("jdbc:oracle:thin:@%s:%d:%s",
+                    oracleTask.getHost(), oracleTask.getPort(), oracleTask.getDatabase());
+        }
 
         Properties props = new Properties();
         props.setProperty("user", oracleTask.getUser());
         props.setProperty("password", oracleTask.getPassword());
-
-        props.setProperty("rewriteBatchedStatements", "true");
-        props.setProperty("useCompression", "true");
-
-        props.setProperty("connectTimeout", "300000"); // milliseconds
-        props.setProperty("socketTimeout", "1800000"); // smillieconds
-
-        // Enable keepalive based on tcp_keepalive_time, tcp_keepalive_intvl and tcp_keepalive_probes kernel parameters.
-        // Socket options TCP_KEEPCNT, TCP_KEEPIDLE, and TCP_KEEPINTVL are not configurable.
-        props.setProperty("tcpKeepAlive", "true");
-
-        // TODO
-        //switch t.getSssl() {
-        //when "disable":
-        //    break;
-        //when "enable":
-        //    props.setProperty("useSSL", "true");
-        //    props.setProperty("requireSSL", "false");
-        //    props.setProperty("verifyServerCertificate", "false");
-        //    break;
-        //when "verify":
-        //    props.setProperty("useSSL", "true");
-        //    props.setProperty("requireSSL", "true");
-        //    props.setProperty("verifyServerCertificate", "true");
-        //    break;
-        //}
-
-        if (!retryableMetadataOperation) {
-            // non-retryable batch operation uses longer timeout
-            props.setProperty("connectTimeout",  "300000");  // milliseconds
-            props.setProperty("socketTimeout", "2700000");   // milliseconds
-        }
-
         props.putAll(oracleTask.getOptions());
 
         return new OracleOutputConnector(url, props);

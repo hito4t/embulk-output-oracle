@@ -20,8 +20,6 @@ out:
     database: XE
     user: EMBULK
     password: embulk_pw
-    table: TEST1
+    table: TEST2
     mode: insert
-    driver_class: oracle.jdbc.driver.OracleDriver
     driver_path: lib/ojdbc7.jar 
-    url: jdbc:oracle:thin:@localhost:1521:XE
