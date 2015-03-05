@@ -1,0 +1,25 @@
+in:
+  type: file
+  path_prefix: 'src/test/resources/test1'
+  parser:
+    charset: UTF-8
+    newline: CRLF
+    type: csv
+    delimiter: ','
+    columns:
+    - {name: id, type: string}
+    - {name: varchar2_item, type: string}
+    - {name: number_item, type: long}
+    - {name: date_item, type: timestamp, format: '%Y/%m/%d'}
+    - {name: timestamp_item, type: timestamp, format: '%Y/%m/%d %H:%M:%S'}
+out: 
+    type: jdbc
+    host: localhost
+    database: EMBULK
+    user: EMBULK
+    password: embulk_pw
+    table: test1
+    mode: insert
+    driver_class: oracle.jdbc.driver.OracleDriver
+    driver_path: lib/ojdbc7.jar 
+    url: jdbc:oracle:thin:@localhost:1521:XE
