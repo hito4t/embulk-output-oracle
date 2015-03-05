@@ -20,6 +20,7 @@ public class OracleOutputConnection
         connection.setAutoCommit(autoCommit);
     }
 
+    /*
     @Override
     protected String convertTypeName(String typeName)
     {
@@ -30,6 +31,7 @@ public class OracleOutputConnection
             return typeName;
         }
     }
+    */
     
     @Override
     public void createTableIfNotExists(String tableName, JdbcSchema schema) throws SQLException {

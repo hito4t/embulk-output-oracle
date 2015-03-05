@@ -8,8 +8,8 @@ import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.output.jdbc.AbstractJdbcOutputPlugin;
 import org.embulk.output.jdbc.BatchInsert;
+import org.embulk.output.jdbc.StandardBatchInsert;
 import org.embulk.output.jdbc.setter.ColumnSetterFactory;
-import org.embulk.output.oracle.OracleBatchInsert;
 import org.embulk.output.oracle.OracleOutputConnector;
 import org.embulk.output.oracle.setter.OracleColumnSetterFactory;
 import org.embulk.spi.PageReader;
@@ -111,7 +111,7 @@ public class OracleOutputPlugin
     @Override
     protected BatchInsert newBatchInsert(PluginTask task) throws IOException, SQLException
     {
-        return new OracleBatchInsert(getConnector(task, true));
+        return new StandardBatchInsert(getConnector(task, true));
     }
     
     @Override
