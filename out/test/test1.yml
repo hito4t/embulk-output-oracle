@@ -1,15 +1,17 @@
 in:
   type: file
-  path_prefix: 'src/test/resources/test1'
+  path_prefix: 'src/test/resources/test1/test1'
   parser:
     charset: UTF-8
     newline: CRLF
     type: csv
     delimiter: ','
+    quote: ''
     columns:
     - {name: id, type: string}
     - {name: varchar2_item, type: string}
-    - {name: number_item, type: long}
+    - {name: integer_item, type: long}
+    - {name: number_item, type: string}
     - {name: date_item, type: timestamp, format: '%Y/%m/%d'}
     - {name: timestamp_item, type: timestamp, format: '%Y/%m/%d %H:%M:%S'}
 out: 
@@ -18,7 +20,7 @@ out:
     database: XE
     user: EMBULK
     password: embulk_pw
-    table: test1
+    table: TEST1
     mode: insert
     driver_class: oracle.jdbc.driver.OracleDriver
     driver_path: lib/ojdbc7.jar 
