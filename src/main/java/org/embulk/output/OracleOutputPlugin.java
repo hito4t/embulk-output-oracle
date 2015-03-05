@@ -1,7 +1,6 @@
 package org.embulk.output;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -9,9 +8,12 @@ import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.output.jdbc.AbstractJdbcOutputPlugin;
 import org.embulk.output.jdbc.BatchInsert;
+import org.embulk.output.jdbc.setter.ColumnSetterFactory;
 import org.embulk.output.oracle.OracleBatchInsert;
 import org.embulk.output.oracle.OracleOutputConnector;
-import org.embulk.spi.PluginClassLoader;
+import org.embulk.output.oracle.setter.OracleColumnSetterFactory;
+import org.embulk.spi.PageReader;
+import org.embulk.spi.time.TimestampFormatter;
 
 import com.google.common.base.Optional;
 
@@ -111,4 +113,11 @@ public class OracleOutputPlugin
     {
         return new OracleBatchInsert(getConnector(task, true));
     }
+    
+    @Override
+    protected ColumnSetterFactory newColumnSetterFactory(BatchInsert batch, PageReader pageReader,
+    		TimestampFormatter timestampFormatter) {
+    	return new OracleColumnSetterFactory(batch, pageReader, timestampFormatter);
+    }
+    
 }
