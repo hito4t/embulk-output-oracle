@@ -1,0 +1,7 @@
+<project name="embulk-output-oracle" default="jar" basedir="./">
+	<target name="jar" depends="" description="jarファイルを作成します。">
+		<mkdir dir="${basedir}/jar" />
+		<jar destfile="${basedir}/jar/embulk-output-oracle-0.1.0.jar" basedir="${basedir}/out/main">
+		</jar>
+	</target>
+</project>
