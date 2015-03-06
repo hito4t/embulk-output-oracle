@@ -10,6 +10,7 @@ import org.embulk.output.jdbc.AbstractJdbcOutputPlugin;
 import org.embulk.output.jdbc.BatchInsert;
 import org.embulk.output.jdbc.StandardBatchInsert;
 import org.embulk.output.jdbc.setter.ColumnSetterFactory;
+import org.embulk.output.oracle.OracleOutputConnection;
 import org.embulk.output.oracle.OracleOutputConnector;
 import org.embulk.output.oracle.setter.OracleColumnSetterFactory;
 import org.embulk.spi.PageReader;
@@ -21,6 +22,8 @@ import com.google.common.base.Optional;
 public class OracleOutputPlugin
         extends AbstractJdbcOutputPlugin
 {
+    private static final int MAX_TABLE_NAME_LENGTH = 30; 
+
     public interface OraclePluginTask
             extends PluginTask
     {
@@ -50,7 +53,6 @@ public class OracleOutputPlugin
         @Config("password")
         @ConfigDefault("\"\"")
         public String getPassword();
-
     }
 
     @Override
@@ -65,21 +67,21 @@ public class OracleOutputPlugin
         OraclePluginTask oracleTask = (OraclePluginTask) task;
         
         if (oracleTask.getDriverPath().isPresent()) {
-        	loadDriverJar(oracleTask.getDriverPath().get());
+            loadDriverJar(oracleTask.getDriverPath().get());
         }
 
         String url;
         if (oracleTask.getUrl().isPresent()) {
-        	url = oracleTask.getUrl().get();
+            url = oracleTask.getUrl().get();
         } else {
-        	if (!oracleTask.getHost().isPresent()) {
-        		throw new IllegalArgumentException("Field 'host' is not set.");
-        	}
-        	if (!oracleTask.getDatabase().isPresent()) {
-        		throw new IllegalArgumentException("Field 'database' is not set.");
-        	}
-        	
-        	url = String.format("jdbc:oracle:thin:@%s:%d:%s",
+            if (!oracleTask.getHost().isPresent()) {
+                throw new IllegalArgumentException("Field 'host' is not set.");
+            }
+            if (!oracleTask.getDatabase().isPresent()) {
+                throw new IllegalArgumentException("Field 'database' is not set.");
+            }
+            
+            url = String.format("jdbc:oracle:thin:@%s:%d:%s",
                     oracleTask.getHost().get(), oracleTask.getPort(), oracleTask.getDatabase().get());
         }
 
@@ -99,14 +101,29 @@ public class OracleOutputPlugin
     
     @Override
     protected ColumnSetterFactory newColumnSetterFactory(BatchInsert batch, PageReader pageReader,
-    		TimestampFormatter timestampFormatter) {
-    	return new OracleColumnSetterFactory(batch, pageReader, timestampFormatter);
+            TimestampFormatter timestampFormatter) {
+        return new OracleColumnSetterFactory(batch, pageReader, timestampFormatter);
     }
     
     @Override
-    protected String generateSwapTableName(PluginTask task) {
-    	// TODO
-    	return task.getTable() + "_";
+    protected String generateSwapTableName(PluginTask task) throws SQLException {
+        OracleOutputConnector connector = getConnector(task, true);
+        
+        String tablePrefix = task.getTable();
+        if (tablePrefix.length() > MAX_TABLE_NAME_LENGTH - 3) {
+            tablePrefix = tablePrefix.substring(0, MAX_TABLE_NAME_LENGTH - 3);
+        }
+        
+        try (OracleOutputConnection connection = connector.connect(true)) {
+            for (int i = 0; i < 1000; i++) {
+                String table = String.format("%s%03d", tablePrefix, i);
+                if (!connection.tableExists(table)) {
+                    return table;
+                }
+            }
+        }
+        
+        throw new SQLException("Cannot generate a swap table name."); 
     }
     
 }
