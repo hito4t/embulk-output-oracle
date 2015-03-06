@@ -17,9 +17,7 @@ public class OracleOutputConnector
     public OracleOutputConnector(String url, Properties properties)
     {
         try {
-            //this.driver = new com.mysql.jdbc.Driver();  // new com.mysql.jdbc.Driver throws SQLException
         	Class<? extends Driver> driverClass = (Class<? extends Driver>)Class.forName("oracle.jdbc.OracleDriver");
-        	//this.driver = driverClass.newInstance();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

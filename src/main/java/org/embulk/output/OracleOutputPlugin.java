@@ -65,10 +65,7 @@ public class OracleOutputPlugin
         OraclePluginTask oracleTask = (OraclePluginTask) task;
         
         if (oracleTask.getDriverPath().isPresent()) {
-        	// TODO:スーパークラスを利用
-            // TODO:後でなんとかする。今は直JARをクラスパスに追加
-            // PluginClassLoader loader = (PluginClassLoader) getClass().getClassLoader();
-            //loader.addPath(Paths.get(oracleTask.getDriverPath().get()));
+        	loadDriverJar(oracleTask.getDriverPath().get());
         }
 
         String url;
@@ -104,6 +101,12 @@ public class OracleOutputPlugin
     protected ColumnSetterFactory newColumnSetterFactory(BatchInsert batch, PageReader pageReader,
     		TimestampFormatter timestampFormatter) {
     	return new OracleColumnSetterFactory(batch, pageReader, timestampFormatter);
+    }
+    
+    @Override
+    protected String generateSwapTableName(PluginTask task) {
+    	// TODO
+    	return task.getTable() + "_";
     }
     
 }
