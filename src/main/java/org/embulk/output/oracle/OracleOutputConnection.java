@@ -2,6 +2,7 @@ package org.embulk.output.oracle;
 
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,8 +15,7 @@ public class OracleOutputConnection
     public OracleOutputConnection(Connection connection, boolean autoCommit)
             throws SQLException
     {
-    	// TODO:古いJDBCドライバ対応
-        super(connection, connection.getSchema());
+        super(connection, getSchema(connection));
         connection.setAutoCommit(autoCommit);
     }
 
@@ -32,31 +32,45 @@ public class OracleOutputConnection
     
     @Override
     protected void setSearchPath(String schema) throws SQLException {
-    	// NOP
+        // NOP
     }
     
     
     @Override
-	public void dropTableIfExists(String tableName) throws SQLException
+    public void dropTableIfExists(String tableName) throws SQLException
     {
-    	if (tableExists(tableName)) {
-    		dropTable(tableName);
-    	}
+        if (tableExists(tableName)) {
+            dropTable(tableName);
+        }
     }
     
     @Override
     protected void dropTableIfExists(Statement stmt, String tableName) throws SQLException {
-    	if (tableExists(tableName)) {
-    		dropTable(stmt, tableName);
-    	}
+        if (tableExists(tableName)) {
+            dropTable(stmt, tableName);
+        }
     }
 
     @Override
-	public void createTableIfNotExists(String tableName, JdbcSchema schema) throws SQLException
+    public void createTableIfNotExists(String tableName, JdbcSchema schema) throws SQLException
     {
-    	if (!tableExists(tableName)) {
-    		createTable(tableName, schema);
-    	}
+        if (!tableExists(tableName)) {
+            createTable(tableName, schema);
+        }
     }
 
+    private static String getSchema(Connection connection) throws SQLException 
+    {
+        // Because old Oracle JDBC drivers don't support Connection#getSchema method. 
+        String sql = "SELECT SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') FROM DUAL";
+        try (Statement statement = connection.createStatement()) {
+            try (ResultSet resultSet = statement.executeQuery(sql)) {
+                if (resultSet.next()) {
+                    return resultSet.getString(1);
+                }
+                throw new SQLException(String.format("Cannot get schema becase \"%s\" didn't return any value.", sql));
+            }
+        }
+    }
+    
 }
