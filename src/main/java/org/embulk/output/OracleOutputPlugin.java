@@ -108,22 +108,34 @@ public class OracleOutputPlugin
     @Override
     protected String generateSwapTableName(PluginTask task) throws SQLException {
         OracleOutputConnector connector = getConnector(task, true);
-        
+
+        int minLength = 3;
         String tablePrefix = task.getTable();
-        if (tablePrefix.length() > MAX_TABLE_NAME_LENGTH - 3) {
-            tablePrefix = tablePrefix.substring(0, MAX_TABLE_NAME_LENGTH - 3);
+        if (tablePrefix.length() > MAX_TABLE_NAME_LENGTH - minLength) {
+            tablePrefix = tablePrefix.substring(0, MAX_TABLE_NAME_LENGTH - minLength);
         }
-        
+
         try (OracleOutputConnection connection = connector.connect(true)) {
-            for (int i = 0; i < 1000; i++) {
-                String table = String.format("%s%03d", tablePrefix, i);
+            for (int i = 0; ; i++) {
+                String s = Integer.toString(i);
+                if (tablePrefix.length() + s.length() > MAX_TABLE_NAME_LENGTH) {
+                    throw new SQLException("Cannot generate a swap table name."); 
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append(tablePrefix);
+                for (int j = tablePrefix.length(); j < MAX_TABLE_NAME_LENGTH - s.length(); j++) {
+                    sb.append("0");
+                }
+                sb.append(s);
+
+                String table = sb.toString();
                 if (!connection.tableExists(table)) {
                     return table;
                 }
             }
         }
         
-        throw new SQLException("Cannot generate a swap table name."); 
     }
     
 }
