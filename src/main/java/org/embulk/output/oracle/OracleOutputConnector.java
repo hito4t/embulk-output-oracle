@@ -1,7 +1,6 @@
 package org.embulk.output.oracle;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -17,7 +16,7 @@ public class OracleOutputConnector
     public OracleOutputConnector(String url, Properties properties)
     {
         try {
-        	Class<? extends Driver> driverClass = (Class<? extends Driver>)Class.forName("oracle.jdbc.OracleDriver");
+        	Class.forName("oracle.jdbc.OracleDriver");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -25,7 +24,6 @@ public class OracleOutputConnector
         this.properties = properties;
     }
 
-    // TODO:スーパークラスを利用するようにしたい
     @Override
     public OracleOutputConnection connect(boolean autoCommit) throws SQLException
     {
