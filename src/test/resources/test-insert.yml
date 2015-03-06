@@ -22,4 +22,4 @@ out:
     password: embulk_pw
     table: TEST1
     mode: insert
-    driver_path: lib/ojdbc7.jar 
+    #driver_path: lib/ojdbc7.jar 

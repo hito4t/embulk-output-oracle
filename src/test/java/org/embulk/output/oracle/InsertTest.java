@@ -1,11 +1,10 @@
 package org.embulk.output.oracle;
 
-import org.embulk.cli.Main;
 
-public class InsertTest {
+public class InsertTest extends EmbulkPluginTest {
 	
 	public static void main(String[] args) {
-		Main.main(new String[]{"run", "src/test/resources/test-insert.yml"});
+		execute("run", "src/test/resources/test-insert.yml");
 	}
 	
 }
