@@ -119,7 +119,7 @@ public class OracleOutputPlugin
             for (int i = 0; ; i++) {
                 String s = Integer.toString(i);
                 if (tablePrefix.length() + s.length() > MAX_TABLE_NAME_LENGTH) {
-                    throw new SQLException("Cannot generate a swap table name."); 
+                    break; 
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -133,9 +133,14 @@ public class OracleOutputPlugin
                 if (!connection.tableExists(table)) {
                     return table;
                 }
+                
+                if (i == Integer.MAX_VALUE) {
+                	break;
+                }
             }
         }
         
+        throw new SQLException("Cannot generate a swap table name."); 
     }
     
 }
